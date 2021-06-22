@@ -65,17 +65,17 @@ public class BoggleSolver {
                 curPat.append(letter);
             }
             marked[i] = true;
-            findAllPathes(dic, curPat, i);
+            findAllPathes(curPat, i);
         }
         return validWords;
     }
 
-    private void findAllPathes(TrieSET branch, StringBuilder curPat, int curP) {
+    private void findAllPathes(StringBuilder curPat, int curP) {
         // check if there is a occurrence of current pattern
         int curLen = curPat.length();
         String pattern = curPat.toString();
         TrieSET newBranch = new TrieSET();
-        for (String word : branch.keysWithPrefix(pattern))
+        for (String word : dic.keysWithPrefix(pattern))
             newBranch.add(word);
         if (newBranch.size() == 0) // if there is no branch for current prefix
             return;
@@ -94,7 +94,7 @@ public class BoggleSolver {
                     curPat.append(letter);
                 }
                 marked[i] = true;
-                findAllPathes(newBranch, curPat, i);
+                findAllPathes(curPat, i);
                 if (letter == 'Q')
                     curPat.delete(curLen, curLen + 2);
                 else
