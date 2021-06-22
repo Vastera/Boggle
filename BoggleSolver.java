@@ -7,17 +7,16 @@
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
-import edu.princeton.cs.algs4.TrieSET;
 
 import java.util.ArrayList;
 
 public class BoggleSolver {
     // dictionary stored by String type
-    private final TrieSET dic;
+    private final TriesSET26 dic;
     private ArrayList<Bag<Integer>> adj;
     private int cols;
     private char[] dice;
-    private TrieSET validWords;
+    private TriesSET26 validWords;
     private boolean[] marked;
 
     // Initializes the data structure using the given array of strings as the directory.
@@ -26,7 +25,7 @@ public class BoggleSolver {
         if (dictionary == null)
             throw new IllegalArgumentException("input dictionary is null~");
         // use a tries set to store all the words in the dictionary.
-        dic = new TrieSET();
+        dic = new TriesSET26();
         for (int i = 0; i < dictionary.length; i++)
             dic.add(dictionary[i]);
     }
@@ -53,7 +52,7 @@ public class BoggleSolver {
         }
         char letter;
         StringBuilder curPat;
-        validWords = new TrieSET();
+        validWords = new TriesSET26();
         for (int i = 0; i < dice.length; i++) {
             curPat = new StringBuilder();
             marked = new boolean[dice.length];
@@ -70,11 +69,11 @@ public class BoggleSolver {
         return validWords;
     }
 
-    private void findAllPathes(TrieSET branch, StringBuilder curPat, int curP) {
+    private void findAllPathes(TriesSET26 branch, StringBuilder curPat, int curP) {
         // check if there is a occurrence of current pattern
         int curLen = curPat.length();
         String pattern = curPat.toString();
-        TrieSET newBranch = new TrieSET();
+        TriesSET26 newBranch = new TriesSET26();
         for (String word : branch.keysWithPrefix(pattern))
             newBranch.add(word);
         if (newBranch.size() == 0) // if there is no branch for current prefix
