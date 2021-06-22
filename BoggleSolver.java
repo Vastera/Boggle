@@ -76,7 +76,7 @@ public class BoggleSolver {
         String pattern = curPat.toString();
         TriesSET26 newBranch = new TriesSET26();
         if (dice[curP] == 'Q') {
-            for (String word : branch.keysWithPrefix(pattern, Math.max(0, curLen - 2)))
+            for (String word : branch.keysWithPrefix(pattern, Math.max(0, curLen - 3)))
                 newBranch.add(word, curLen - 2);
             if (newBranch.size() == 0) // if there is no branch for current prefix
                 return;
