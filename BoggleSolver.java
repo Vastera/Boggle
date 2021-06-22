@@ -76,25 +76,28 @@ public class BoggleSolver {
         String pattern = curPat.toString();
         TriesSET26 newBranch = new TriesSET26();
         if (dice[curP] == 'Q') {
-            for (String word : branch.keysWithPrefix(pattern, Math.max(0, curLen - 3)))
-                newBranch.add(word, curLen - 2);
-            if (newBranch.size() == 0) // if there is no branch for current prefix
-                return;
-            if (curLen >= 3 && !validWords.contains(pattern))
-                if (newBranch.contains(pattern, curLen - 1)) {
-                    validWords.put(pattern, 1);
+            for (String word : branch.keysWithPrefix(pattern, Math.max(0, curLen - 2))) {
+                if (word.length() == curLen) {
+                    if (curLen >= 3 && !validWords.contains(pattern))
+                        validWords.put(pattern, 1);
                 }
-        }
-        else {
-            for (String word : branch.keysWithPrefix(pattern, Math.max(0, curLen - 2)))
-                newBranch.add(word, curLen - 1);
-            if (newBranch.size() == 0) // if there is no branch for current prefix
-                return;
-            if (curLen >= 3 && !validWords.contains(pattern))
-                if (newBranch.contains(pattern, curLen - 1)) {
-                    validWords.put(pattern, 1);
+                else {
+                    newBranch.add(word, curLen);
                 }
+            }
+        }else {
+            for (String word : branch.keysWithPrefix(pattern, Math.max(0, curLen - 1))) {
+                if (word.length() == curLen) {
+                    if (curLen >= 3 && !validWords.contains(pattern))
+                        validWords.put(pattern, 1);
+                }
+                else {
+                    newBranch.add(word, curLen);
+                }
+            }
         }
+        if (newBranch.size() == 0) // if there is no branch for current prefix
+            return;
 
         // next points
         Bag<Integer> curAdj = adj.get(curP);
