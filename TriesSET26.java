@@ -34,7 +34,7 @@ import java.util.Iterator;
  */
 public class TriesSET26 implements Iterable<String> {
     private static final int R = 26;        // 26 English characters
-    private static final char offset = 'A';
+    private static final char OFFSET = 'A';
     Node root;      // root of trie
     private int n;          // number of keys in trie
 
@@ -65,11 +65,18 @@ public class TriesSET26 implements Iterable<String> {
         return x.isString;
     }
 
+    public boolean contains(String key, int d) {
+        if (key == null) throw new IllegalArgumentException("argument to contains() is null");
+        Node x = get(root, key, d);
+        if (x == null) return false;
+        return x.isString;
+    }
+
     private Node get(Node x, String key, int d) {
         if (x == null) return null;
         if (d == key.length()) return x;
         char c = key.charAt(d);
-        return get(x.next[c - offset], key, d + 1);
+        return get(x.next[c - OFFSET], key, d + 1);
     }
 
     /**
@@ -83,6 +90,11 @@ public class TriesSET26 implements Iterable<String> {
         root = add(root, key, 0);
     }
 
+    public void add(String key, int d) {
+        if (key == null) throw new IllegalArgumentException("argument to add() is null");
+        root = add(root, key, d);
+    }
+
     private Node add(Node x, String key, int d) {
         if (x == null) x = new Node();
         if (d == key.length()) {
@@ -91,7 +103,7 @@ public class TriesSET26 implements Iterable<String> {
         }
         else {
             char c = key.charAt(d);
-            x.next[c - offset] = add(x.next[c - offset], key, d + 1);
+            x.next[c - OFFSET] = add(x.next[c - OFFSET], key, d + 1);
         }
         return x;
     }
@@ -132,6 +144,13 @@ public class TriesSET26 implements Iterable<String> {
      * @return all of the keys in the set that start with {@code prefix},
      * as an iterable
      */
+    public Iterable<String> keysWithPrefix(String prefix, int d) {
+        Queue<String> results = new Queue<String>();
+        Node x = get(root, prefix, d);
+        collect(x, new StringBuilder(prefix), results);
+        return results;
+    }
+
     public Iterable<String> keysWithPrefix(String prefix) {
         Queue<String> results = new Queue<String>();
         Node x = get(root, prefix, 0);
@@ -143,7 +162,7 @@ public class TriesSET26 implements Iterable<String> {
         if (x == null) return;
         if (x.isString) results.enqueue(prefix.toString());
         for (char c = 0; c < R; c++) {
-            prefix.append((char) (c + offset));
+            prefix.append((char) (c + OFFSET));
             collect(x.next[c], prefix, results);
             prefix.deleteCharAt(prefix.length() - 1);
         }
@@ -174,13 +193,13 @@ public class TriesSET26 implements Iterable<String> {
         char c = pattern.charAt(d);
         if (c == '.') {
             for (char ch = 0; ch < R; ch++) {
-                prefix.append((char) (ch + offset));
+                prefix.append((char) (ch + OFFSET));
                 collect(x.next[ch], prefix, pattern, results);
                 prefix.deleteCharAt(prefix.length() - 1);
             }
         }
         else {
-            prefix.append((char) (c + offset));
+            prefix.append((char) (c + OFFSET));
             collect(x.next[c], prefix, pattern, results);
             prefix.deleteCharAt(prefix.length() - 1);
         }
@@ -212,7 +231,7 @@ public class TriesSET26 implements Iterable<String> {
         if (x.isString) length = d;
         if (d == query.length()) return length;
         char c = query.charAt(d);
-        return longestPrefixOf(x.next[c - offset], query, d + 1, length);
+        return longestPrefixOf(x.next[c - OFFSET], query, d + 1, length);
     }
 
     /**
@@ -234,7 +253,7 @@ public class TriesSET26 implements Iterable<String> {
         }
         else {
             char c = key.charAt(d);
-            x.next[c - offset] = delete(x.next[c - offset], key, d + 1);
+            x.next[c - OFFSET] = delete(x.next[c - OFFSET], key, d + 1);
         }
 
         // remove subtrie rooted at x if it is completely empty

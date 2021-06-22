@@ -7,6 +7,7 @@
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.TST;
 
 import java.util.ArrayList;
 
@@ -16,7 +17,7 @@ public class BoggleSolver {
     private ArrayList<Bag<Integer>> adj;
     private int cols;
     private char[] dice;
-    private TriesSET26 validWords;
+    private TST<Integer> validWords;
     private boolean[] marked;
 
     // Initializes the data structure using the given array of strings as the directory.
@@ -52,7 +53,7 @@ public class BoggleSolver {
         }
         char letter;
         StringBuilder curPat;
-        validWords = new TriesSET26();
+        validWords = new TST<Integer>();
         for (int i = 0; i < dice.length; i++) {
             curPat = new StringBuilder();
             marked = new boolean[dice.length];
@@ -66,7 +67,7 @@ public class BoggleSolver {
             marked[i] = true;
             findAllPathes(dic, curPat, i);
         }
-        return validWords;
+        return validWords.keys();
     }
 
     private void findAllPathes(TriesSET26 branch, StringBuilder curPat, int curP) {
@@ -74,12 +75,26 @@ public class BoggleSolver {
         int curLen = curPat.length();
         String pattern = curPat.toString();
         TriesSET26 newBranch = new TriesSET26();
-        for (String word : branch.keysWithPrefix(pattern))
-            newBranch.add(word);
-        if (newBranch.size() == 0) // if there is no branch for current prefix
-            return;
-        if (curLen >= 3 && newBranch.contains(pattern) && !validWords.contains(pattern))
-            validWords.add(pattern);
+        if (dice[curP] == 'Q') {
+            for (String word : branch.keysWithPrefix(pattern, Math.max(0, curLen - 2)))
+                newBranch.add(word, curLen - 2);
+            if (newBranch.size() == 0) // if there is no branch for current prefix
+                return;
+            if (curLen >= 3 && !validWords.contains(pattern))
+                if (newBranch.contains(pattern, curLen - 1)) {
+                    validWords.put(pattern, 1);
+                }
+        }
+        else {
+            for (String word : branch.keysWithPrefix(pattern, Math.max(0, curLen - 2)))
+                newBranch.add(word, curLen - 1);
+            if (newBranch.size() == 0) // if there is no branch for current prefix
+                return;
+            if (curLen >= 3 && !validWords.contains(pattern))
+                if (newBranch.contains(pattern, curLen - 1)) {
+                    validWords.put(pattern, 1);
+                }
+        }
 
         // next points
         Bag<Integer> curAdj = adj.get(curP);
