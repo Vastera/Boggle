@@ -81,22 +81,23 @@ public class BoggleSolver {
                 else
                     unmarked.put(dice[j], 1);
             }
+
             findAllPathes(dic, curPat, i);
         }
         return validWords;
     }
 
     private void findAllPathes(TriesSET26 branch, StringBuilder curPat, int curP) {
-        // remove the current dice from the HashMap of unmarked
-        if (unmarked.get(dice[curP]) > 0)
-            unmarked.put(dice[curP], unmarked.get(dice[curP]) - 0);
-        else
-            unmarked.remove(dice[curP]);
         // check if there is a occurrence of current pattern
         if (unmarked.size() <= 1) {
             findOnePath(branch, curPat, dice[curP]);
             return;
         }
+        // remove the current dice from the HashMap of unmarked
+        if (unmarked.get(dice[curP]) > 1)
+            unmarked.put(dice[curP], unmarked.get(dice[curP]) - 1);
+        else
+            unmarked.remove(dice[curP]);
 
         int curLen = curPat.length();
         String pattern = curPat.toString();
@@ -153,6 +154,10 @@ public class BoggleSolver {
     }
 
     private void findOnePath(TriesSET26 branch, StringBuilder curPat, char remainChar) {
+        if (unmarked.get(remainChar) == 0)
+            return;
+        unmarked.put(remainChar, unmarked.get(remainChar) - 1);
+
         int curLen = curPat.length();
         String pattern = curPat.toString();
         TriesSET26 newBranch = new TriesSET26();
@@ -180,12 +185,6 @@ public class BoggleSolver {
         }
         if (newBranch.size() == 0) // if there is no branch for current prefix
             return;
-        if (unmarked.get(remainChar) <= 1)
-            return;
-        else
-            unmarked.put(remainChar, unmarked.get(remainChar) - 1);
-
-        // next points
         if (remainChar == 'Q') {
             curPat.append("QU");
         }
