@@ -17,6 +17,7 @@ public class BoggleSolver {
     private ArrayList<SET<Integer>> adj;
     private int cols;
     private char[] dice;
+    private int maxWordLen;
     private TriesSET26 validWords;
     private boolean[] marked;
     private HashMap<Character, Integer> unmarked;
@@ -29,7 +30,7 @@ public class BoggleSolver {
         // use a tries set to store all the words in the dictionary.
         dic = new TriesSET26();
         for (int i = 0; i < dictionary.length; i++)
-            dic.add(dictionary[i], 0);
+            dic.add(dictionary[i]);
     }
 
     // Returns the set of all valid words in the given Boggle board, as an Iterable.
@@ -39,9 +40,16 @@ public class BoggleSolver {
             throw new IllegalArgumentException("input board is null~");
         cols = board.cols();
         dice = new char[board.cols() * board.rows()];
-        for (int i = 0; i < dice.length; i++)
+        // the possible max length of word
+        maxWordLen = dice.length;
+        for (int i = 0; i < dice.length; i++) {
             dice[i] = board.getLetter(i / cols, i % cols);
+            if (dice[i] == 'Q')
+                maxWordLen++;
+        }
 
+
+        //calculate the adjacency for each die
         adj = new ArrayList<SET<Integer>>();
         SET<Integer> tempBag;
         for (int i = 0; i < dice.length; i++) {
@@ -79,17 +87,17 @@ public class BoggleSolver {
     }
 
     private void findAllPathes(TriesSET26 branch, StringBuilder curPat, int curP) {
+        // remove the current dice from the HashMap of unmarked
+        if (unmarked.get(dice[curP]) > 0)
+            unmarked.put(dice[curP], unmarked.get(dice[curP]) - 0);
+        else
+            unmarked.remove(dice[curP]);
         // check if there is a occurrence of current pattern
-        if (unmarked.size() == 1) {
+        if (unmarked.size() <= 1) {
             findOnePath(branch, curPat, dice[curP]);
             return;
         }
-        else {
-            if (unmarked.get(dice[curP]) > 1)
-                unmarked.put(dice[curP], unmarked.get(dice[curP]) - 1);
-            else
-                unmarked.remove(dice[curP]);
-        }
+
         int curLen = curPat.length();
         String pattern = curPat.toString();
         TriesSET26 newBranch = new TriesSET26();
@@ -99,7 +107,7 @@ public class BoggleSolver {
                     if (curLen >= 3 && !validWords.contains(pattern))
                         validWords.add(pattern);
                 }
-                else {
+                else if (word.length() <= maxWordLen) {
                     newBranch.add(word, curLen);
                 }
             }
@@ -110,7 +118,7 @@ public class BoggleSolver {
                     if (curLen >= 3 && !validWords.contains(pattern))
                         validWords.add(pattern);
                 }
-                else {
+                else if (word.length() <= maxWordLen) {
                     newBranch.add(word, curLen);
                 }
             }
@@ -154,7 +162,7 @@ public class BoggleSolver {
                     if (curLen >= 3 && !validWords.contains(pattern))
                         validWords.add(pattern);
                 }
-                else {
+                else if (word.length() <= maxWordLen) {
                     newBranch.add(word, curLen);
                 }
             }
@@ -165,14 +173,14 @@ public class BoggleSolver {
                     if (curLen >= 3 && !validWords.contains(pattern))
                         validWords.add(pattern);
                 }
-                else {
+                else if (word.length() <= maxWordLen) {
                     newBranch.add(word, curLen);
                 }
             }
         }
         if (newBranch.size() == 0) // if there is no branch for current prefix
             return;
-        if (unmarked.get(remainChar) == 1)
+        if (unmarked.get(remainChar) <= 1)
             return;
         else
             unmarked.put(remainChar, unmarked.get(remainChar) - 1);
@@ -194,17 +202,30 @@ public class BoggleSolver {
     // Returns the score of the give word if it is in the dictionary, zero otherwise.
     // (You can assume the word contains only the uppercase letters A through Z.)
     public int scoreOf(String word) {
-        int[] scoreTable = new int[2 * dice.length + 1];
-        for (int i = 0; i < 3; i++)
-            scoreTable[i] = 0;
-        scoreTable[3] = 1;
-        scoreTable[4] = 1;
-        for (int i = 5; i < 7; i++)
-            scoreTable[i] = i - 3;
-        scoreTable[7] = 5;
-        for (int i = 8; i < scoreTable.length; i++)
-            scoreTable[i] = 11;
-        return scoreTable[word.length()];
+        int ret = 0;
+        int len = word.length();
+        switch (len) {
+            case (1):
+            case (2):
+                ret = 0;
+                break;
+            case (3):
+            case (4):
+                ret = 1;
+                break;
+            case (5):
+                ret = 2;
+                break;
+            case (6):
+                ret = 3;
+                break;
+            case (7):
+                ret = 5;
+                break;
+            default:
+                ret = 11;
+        }
+        return ret;
     }
 
     public static void main(String[] args) {
