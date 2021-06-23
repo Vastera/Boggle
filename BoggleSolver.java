@@ -4,21 +4,22 @@
  *  Description:
  **************************************************************************** */
 
-import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.SET;
 import edu.princeton.cs.algs4.StdOut;
-import edu.princeton.cs.algs4.TST;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class BoggleSolver {
     // dictionary stored by String type
     private final TriesSET26 dic;
-    private ArrayList<Bag<Integer>> adj;
+    private ArrayList<SET<Integer>> adj;
     private int cols;
     private char[] dice;
-    private TST<Integer> validWords;
+    private TriesSET26 validWords;
     private boolean[] marked;
+    private HashMap<Character,Integer> unmarked;
 
     // Initializes the data structure using the given array of strings as the directory.
     //(You can assume each word in the directory contains only the uppercase letters A through Z.)
@@ -28,7 +29,7 @@ public class BoggleSolver {
         // use a tries set to store all the words in the dictionary.
         dic = new TriesSET26();
         for (int i = 0; i < dictionary.length; i++)
-            dic.add(dictionary[i]);
+            dic.add(dictionary[i],0);
     }
 
     // Returns the set of all valid words in the given Boggle board, as an Iterable.
@@ -41,10 +42,10 @@ public class BoggleSolver {
         for (int i = 0; i < dice.length; i++)
             dice[i] = board.getLetter(i / cols, i % cols);
 
-        adj = new ArrayList<Bag<Integer>>();
-        Bag<Integer> tempBag;
+        adj = new ArrayList<SET<Integer>>();
+        SET<Integer> tempBag;
         for (int i = 0; i < dice.length; i++) {
-            tempBag = new Bag<Integer>();
+            tempBag = new SET<Integer>();
             for (int m = -1; m <= 1; m++)
                 for (int n = -1; n <= 1; n++)
                     if ((m != 0 || n != 0) && isValidDie(i / cols + m, i % cols + n))
@@ -53,10 +54,11 @@ public class BoggleSolver {
         }
         char letter;
         StringBuilder curPat;
-        validWords = new TST<Integer>();
+        validWords = new TriesSET26();
         for (int i = 0; i < dice.length; i++) {
             curPat = new StringBuilder();
             marked = new boolean[dice.length];
+            unmarked = new HashMap<Character,Integer>();
             letter = dice[i];
             if (letter == 'Q') {
                 curPat.append("QU");
@@ -65,13 +67,29 @@ public class BoggleSolver {
                 curPat.append(letter);
             }
             marked[i] = true;
+            for (int j=0;j<dice.length;j++)
+                if (!marked[j]){
+                    if (unmarked.containsKey(dice[j]))
+                        unmarked.put(dice[j],unmarked.get(dice[j])+1);
+                    else
+                        unmarked.put(dice[j],1);
+                }
             findAllPathes(dic, curPat, i);
         }
-        return validWords.keys();
+        return validWords;
     }
 
     private void findAllPathes(TriesSET26 branch, StringBuilder curPat, int curP) {
         // check if there is a occurrence of current pattern
+        if (unmarked.size()==1){
+            findOnePath(branch, curPat, dice[curP]);
+            return;
+        }else {
+            if (unmarked.get(dice[curP])>1)
+            unmarked.put(dice[curP],unmarked.get(dice[curP])-1);
+            else
+                unmarked.remove(dice[curP]);
+        }
         int curLen = curPat.length();
         String pattern = curPat.toString();
         TriesSET26 newBranch = new TriesSET26();
@@ -79,7 +97,7 @@ public class BoggleSolver {
             for (String word : branch.keysWithPrefix(pattern, Math.max(0, curLen - 2))) {
                 if (word.length() == curLen) {
                     if (curLen >= 3 && !validWords.contains(pattern))
-                        validWords.put(pattern, 1);
+                        validWords.add(pattern);
                 }
                 else {
                     newBranch.add(word, curLen);
@@ -89,7 +107,7 @@ public class BoggleSolver {
             for (String word : branch.keysWithPrefix(pattern, Math.max(0, curLen - 1))) {
                 if (word.length() == curLen) {
                     if (curLen >= 3 && !validWords.contains(pattern))
-                        validWords.put(pattern, 1);
+                        validWords.add(pattern);
                 }
                 else {
                     newBranch.add(word, curLen);
@@ -100,7 +118,7 @@ public class BoggleSolver {
             return;
 
         // next points
-        Bag<Integer> curAdj = adj.get(curP);
+        SET<Integer> curAdj = adj.get(curP);
         for (int i : curAdj) {
             if (!marked[i]) {
                 char letter = dice[i];
@@ -120,7 +138,47 @@ public class BoggleSolver {
             }
         }
     }
+    private void findOnePath(TriesSET26 branch, StringBuilder curPat, char remainChar){
+        int curLen = curPat.length();
+        String pattern = curPat.toString();
+        TriesSET26 newBranch = new TriesSET26();
+        if (remainChar == 'Q') {
+            for (String word : branch.keysWithPrefix(pattern, Math.max(0, curLen - 2))) {
+                if (word.length() == curLen) {
+                    if (curLen >= 3 && !validWords.contains(pattern))
+                        validWords.add(pattern);
+                }
+                else {
+                    newBranch.add(word, curLen);
+                }
+            }
+        }else {
+            for (String word : branch.keysWithPrefix(pattern, Math.max(0, curLen - 1))) {
+                if (word.length() == curLen) {
+                    if (curLen >= 3 && !validWords.contains(pattern))
+                        validWords.add(pattern);
+                }
+                else {
+                    newBranch.add(word, curLen);
+                }
+            }
+        }
+        if (newBranch.size() == 0) // if there is no branch for current prefix
+            return;
+        if (unmarked.get(remainChar)==1)
+            return;
+        else
+            unmarked.put(remainChar,unmarked.get(remainChar)-1);
 
+        // next points
+        if (remainChar == 'Q') {
+            curPat.append("QU");
+        }
+        else {
+            curPat.append(remainChar);
+        }
+        findOnePath(newBranch, curPat, remainChar);
+}
     private boolean isValidDie(int i, int j) {
         return i >= 0 && i < dice.length / cols && j >= 0 && j < cols;
     }
@@ -128,7 +186,7 @@ public class BoggleSolver {
     // Returns the score of the give word if it is in the dictionary, zero otherwise.
     // (You can assume the word contains only the uppercase letters A through Z.)
     public int scoreOf(String word) {
-        int[] scoreTable = new int[dice.length + 1];
+        int[] scoreTable = new int[2*dice.length + 1];
         for (int i = 0; i < 3; i++)
             scoreTable[i] = 0;
         scoreTable[3] = 1;
