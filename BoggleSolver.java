@@ -154,9 +154,9 @@ public class BoggleSolver {
     }
 
     private void findOnePath(TriesSET26 branch, StringBuilder curPat, char remainChar) {
+        unmarked.put(remainChar, unmarked.get(remainChar) - 1);
         if (unmarked.get(remainChar) == 0)
             return;
-        unmarked.put(remainChar, unmarked.get(remainChar) - 1);
 
         int curLen = curPat.length();
         String pattern = curPat.toString();
